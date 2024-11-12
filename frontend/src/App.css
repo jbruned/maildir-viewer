@@ -1,0 +1,267 @@
+#root {
+  display: flex;
+  flex-direction: column; /* Stack top bar and main container vertically */
+  height: 100vh;
+}
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #343a40;
+  color: white;
+  width: 100%;
+  z-index: 10;
+}
+.top-bar.search-active>.search-container {
+  flex-grow: 1;
+}
+.top-bar.search-active>.search-container input {
+  display: block !important;
+}
+.top-bar.search-active>.search-container a {
+  display: none !important;
+}
+.top-bar.search-active>.logout-icon-container {
+  display: none;
+}
+.top-bar.search-active>.top-bar-title {
+  display: none;
+}
+.top-bar.search-active>#sidebarToggle {
+  display: none !important;
+}
+.top-bar-title {
+  font-size: 1.5rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+}
+.search-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+.search-container input {
+  width: 100%;
+  max-width: 500px;
+  padding: 8px 20px;
+  border-radius: 30px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  transition: transform 0.3s;
+}
+.search-container input:focus {
+  transform: scale(1.05) translateY(0.2px);
+}
+.logout-icon-container {
+  display: flex;
+  align-items: center;
+}
+.logout-icon {
+  cursor: pointer;
+}
+.username-logout {
+  display: flex;
+  align-items: center;
+}
+.username {
+  margin-right: 10px;
+}
+.logout-button {
+  cursor: pointer;
+  font-size: 18px;
+}
+.main-container {
+  flex-direction: row; /* Sidebar and main content side by side */
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+}
+.sidebar {
+  width: 250px;
+  background-color: #f8f9fa;
+  overflow-y: auto;
+  z-index: 2;
+  flex-shrink: 0;
+  transition: /*transform 0.3s ease, */width 0.3s ease, margin-left 0.3s ease;
+}
+.message-actions {
+  opacity: 0;
+  height: 0;
+  transform: translateY(-107px);
+  transition: opacity 0.3s ease, height 0.3s ease, transform 0.3s ease;
+  z-index: 1;
+}
+.message-actions * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.message-actions.active {
+  transform: translateY(0);
+  opacity: 1;
+  height: 107px;
+}
+.message-actions .card {
+  padding: 12px;
+  margin: 12px;
+  margin: 20px;
+  border-radius: 12px;
+  padding: 0;
+}
+.message-actions .card-body {
+  padding: 12px;
+  text-align: center;
+}
+.message-actions .card-footer {
+  display: flex;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border-top: 1px solid #ddd;
+}
+.message-actions .card-footer .btn {
+  flex: 1;
+  border: none;
+  height: 100%;
+  border-radius: 0;
+}
+.message-actions .card-footer .btn:first-child {
+  background-color: #343a40;
+  border-bottom-left-radius: 12px;
+}
+.message-actions .card-footer .btn:last-child {
+  border-bottom-right-radius: 12px;
+}
+.folder-list a {
+  display: block;
+  z-index: 50000;
+  padding: 8px 15px;
+  color: #333;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+.folder-list a:hover {
+  background-color: #e9ecef;
+}
+.folder-list a.active {
+  background-color: #e9ecef;
+  font-weight: bold;
+}
+.nested-folder {
+  margin-left: 25px;
+}
+
+.main-content {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  padding: 0px;
+  transition: margin-left 0.3s;
+}
+.message-list-item {
+display: flex;
+align-items: center;
+padding: 12px 20px;
+gap: 12px;
+border-bottom: 1px solid #ddd;
+transition: background-color 0.2s;
+cursor: pointer;
+}
+.message-checkbox {
+  width: 30px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.message-summary {
+  flex-grow: 1;
+  overflow: hidden;
+}
+.message-summary>* {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+.message-date {
+  white-space: nowrap;
+  margin: 0;
+}
+.message-list-item:hover {
+  background-color: #f8f9fa;
+}
+/* Small Screens: Sidebar becomes full width and collapsible */
+@media (max-width: 767.98px) {
+  .folder-list a {
+      text-overflow: clip;
+      white-space: nowrap;
+      overflow: hidden;
+  }
+  .sidebar {
+      overflow: hidden;
+      width: 70%;
+      /* width: 0; */
+      /* transform: translateX(-80%); */
+      margin-left: -70%;
+      z-index: 2;
+  }
+  .sidebar.active {
+      /* width: 80%; */
+      /* width: 250px; */
+      margin-left: 0;
+      /* transform: translateX(0); */
+  }
+  .main-content {
+    width: 100%; /* Take full available width */
+    flex-shrink: 0;  
+  }
+}
+.message-view {
+  padding: 30px 40px;
+}
+.message-view .back-btn {
+  padding: 0;
+  padding-bottom: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  margin: 0;
+  margin-right: 10px;
+}
+.message-view .message-title {
+  display: inline-block;
+}
+/* Make the spinner container take the full available width and height */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  margin: auto;
+}
+
+/* Spinner styling */
+.spinner {
+  margin: auto;
+  width: 50px;
+  height: 50px;
+  margin: 50px 0;
+  border: 5px solid #ccc; /* Light grey border */
+  border-top: 5px solid #343a40; /* Dark grey border on top */
+  border-radius: 50%; /* Makes it circular */
+  animation: spin 1s linear infinite; /* Adds continuous spin */
+}
+
+/* Keyframes for spin animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
