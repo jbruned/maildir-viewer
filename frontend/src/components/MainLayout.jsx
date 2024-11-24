@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { MessageList } from './MessageList.jsx'
 import { MessageView } from './MessageView.jsx'
-import { requestFolders, requestMessages } from '../common/requests.jsx'
+import { FolderList } from './FolderList.jsx'
+import { deleteMessages, requestFolders, requestMessages } from '../common/requests.jsx'
 import LoadingScreen from './LoadingScreen.jsx'
 
 function isMessage(data) {
@@ -12,7 +13,10 @@ function MainLayout({ appTitle, username }) {
     const [data, setData] = useState(null)
     const [selectedMessages, setSelectedMessages] = useState([])
     const [folders, setFolders] = useState(null)
-    const [currPath, setPath] = useState('/')
+    const [currPath, setPath] = useState(null)
+    const [confirmDelete, setConfirmDelete] = useState(false)
+    const [deleting, setDeleting] = useState(false)
+    const DEFAULT_FOLDER = 'Inbox'
 
     requestFolders().then(folders => {
         setFolders(folders)
@@ -22,7 +26,19 @@ function MainLayout({ appTitle, username }) {
 
     // Every time the URL changes, reload the messages
     useEffect(() => {
-        console.log('Path changed:', currPath)
+        if (currPath === null) {
+            const path = window.location.pathname
+            if (path === '/') {
+                navigateTo(`/${DEFAULT_FOLDER}`)
+            } else {
+                setPath(window.location.pathname)
+            }
+            return
+        }
+        if (deleting) {
+            return
+        }
+        setData(null)
         lastPromise = requestMessages(currPath)
         const currentPromise = lastPromise
         lastPromise.then(messages => {
@@ -31,7 +47,7 @@ function MainLayout({ appTitle, username }) {
             }
             setData(messages)
         })
-    }, [currPath])
+    }, [currPath, deleting])
 
     function navigateTo(path) {
         window.history.pushState({}, '', path)
@@ -40,7 +56,7 @@ function MainLayout({ appTitle, username }) {
     }
 
     function handleOpenMessage(message) {
-        navigateTo(`/message/${message.id}`)
+        navigateTo(`/${message.path}/${message.id}`)
     }
 
     function handleSelectMessage(message, checked) {
@@ -53,7 +69,28 @@ function MainLayout({ appTitle, username }) {
     }
 
     function handleSelectFolder(folder) {
-        setSelectedFolder(folder)
+        setSelectedMessages([])
+        navigateTo(`/${folder}`)
+    }
+
+    function handleDelete(confirmed) {
+        if (confirmed) {
+            setDeleting(true)
+            deleteMessages(confirmDelete).then(() => {
+                setSelectedMessages(current => current.filter(id => !confirmDelete.includes(id)))
+                setDeleting(false)
+                setConfirmDelete(false)
+            })
+            if (isMessage(data)) {
+                navigateTo(`/${data.path}`)
+            }
+        } else {
+            setConfirmDelete(isMessage(data) ? [data.id] : selectedMessages.slice())
+        }
+    }
+
+    function cancelDelete() {
+        setConfirmDelete(false)
     }
 
     return (
@@ -92,44 +129,13 @@ function MainLayout({ appTitle, username }) {
                             </div>
                             <div className="card-footer">
                                 <a className="btn btn-primary"><i className="fas fa-download"></i></a>
-                                <a className="btn btn-danger"><i className="fas fa-trash"></i></a>
+                                <a className="btn btn-danger" onClick={() => handleDelete(false)}>
+                                    <i className="fas fa-trash"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                    {/* <ul className="folder-list list-unstyled">
-                <li><a href="#" className="active">Inbox</a></li>
-                <li><a href="#">Sent</a></li>
-                <li><a href="#">Drafts</a></li>
-                <li><a href="#">Trash</a></li>
-                <li>
-                  <a href="#">Projects</a>
-                  <ul className="list-unstyled">
-                    <li><a href="#" className="nested-folder">Project Alpha</a></li>
-                    <li><a href="#" className="nested-folder">Project Beta</a></li>
-                  </ul>
-                </li>
-              </ul> */}
-                    <ul className="folder-list list-unstyled">
-                        {folders === null ? (
-                            <LoadingScreen />
-                        ) : (
-                            Object.keys(folders).map(folder => {
-                                if (typeof folders[folder] === 'object') {
-                                    return (
-                                        <li key={folder}>
-                                            <a href="#">{folder}</a>
-                                            <ul className="list-unstyled">
-                                                {Object.keys(folders[folder]).map(subfolder => (
-                                                    <li key={subfolder} className="nested-folder"><a href="#">{subfolder}</a></li>
-                                                ))}
-                                            </ul>
-                                        </li>
-                                    )
-                                }
-                                return <li key={folder}><a href="#">{folder}</a></li>
-                            })
-                        )}
-                    </ul>
+                    <FolderList folders={folders} currPath={currPath} onSelectFolder={handleSelectFolder} />
                 </nav>
 
                 <div className="main-content">
@@ -145,6 +151,33 @@ function MainLayout({ appTitle, username }) {
                     )}
                 </div>
             </div>
+            <div className={`modal fade d-block ${confirmDelete ? ' show' : ''}`} id="deleteModal" tabIndex="-1" role="dialog">
+                <div className="modal-dialog confirm-modal" role="document">
+                    <div className="modal-content">
+                        <div className="modal-header bg-danger">
+                            <h5 className="modal-title text-light">Confirm</h5>
+                            <button type="button" className="close text-light" data-dismiss="modal" aria-label="Close" onClick={cancelDelete}>
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div className="modal-body text-center pb-0">
+                            <p>Do you really want to delete {isMessage(data)
+                                ? 'this message'
+                                : `${selectedMessages.length} message${selectedMessages.length > 1 ? 's' : ''}`
+                            }?</p>
+                        </div>
+                        <div className="modal-footer" style={{justifyContent: 'center'}}>
+                            <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={cancelDelete} style={{minWidth: '75px'}}>
+                                Cancel
+                            </button>
+                            <button type="button" className="btn btn-danger" onClick={() => handleDelete(true)} style={{minWidth: '75px'}}>
+                                {deleting ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className={`modal-backdrop d-block fade ${confirmDelete ? 'show' : ''}`}></div>
         </>
     )
 }

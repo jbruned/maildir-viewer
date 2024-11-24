@@ -8,7 +8,8 @@ const FAKE_MESSAGES = [
         sender: 'test1@domain.com',
         recipient: 'test2@domain.com',
         date: '2024-08-01T10:00:00.0+00:00',
-        body: "Here's a reminder about the upcoming meeting. Please make sure to attend on time as we have a lot to discuss and the room is booked right after."
+        body: "Here's a reminder about the upcoming meeting. Please make sure to attend on time as we have a lot to discuss and the room is booked right after.",
+        path: 'Inbox'
     },
     {
         id: 2,
@@ -16,29 +17,36 @@ const FAKE_MESSAGES = [
         sender: 'test3@domain.com',
         recipient: 'test2@domain.com',
         date: '2024-08-01T08:55:00.0+00:00',
-        body: "We've made significant progress on the project since last week and are on track to meet the deadline. This is a long message that should be truncated, and if it isn't yet, then it should be now. Or now. Or now. Jeez, how wide is the damn viewport? I give up, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec"
+        body: "We've made significant progress on the project since last week and are on track to meet the deadline. This is a long message that should be truncated, and if it isn't yet, then it should be now. Or now. Or now. Jeez, how wide is the damn viewport? I give up, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec",
+        path: 'Inbox'
     }
 ]
 const FAKE_FOLDERS = {
-    Inbox: {},
-    Sent: {},
-    Drafts: {},
-    Trash: {},
-    Projects: {
+    'Inbox': {},
+    'Sent': {},
+    'Drafts': {},
+    'Trash': {},
+    'Projects': {
         'Project Alpha': {},
         'Project Beta': {}
     }
 }
+var deletedMessages = []
 
 export const requestMessages = async (path) => {
     if (MOCK_BACKEND) {
         return new Promise((resolve) => {
             setTimeout(() => {
-                resolve(path.length > 1 ? FAKE_MESSAGES[0] : FAKE_MESSAGES)
+                const messageId = path.match(/\d+$/)
+                if (messageId) {
+                    resolve(FAKE_MESSAGES.find(message => message.id === parseInt(messageId[0])))
+                } else {
+                    resolve(FAKE_MESSAGES.filter(message => path === `/${message.path}` && !deletedMessages.includes(message.id)))
+                }
             }, MOCK_DELAY)
         })
     }
-    const response = await fetch(`${BASE_URL}/messages/${path}`)
+    const response = await fetch(`${BASE_URL}/${path}`)
     return await response.json()
 }
 
@@ -64,4 +72,21 @@ export const requestUsername = async () => {
     }
     const response = await fetch(`${BASE_URL}/login`)
     return await response.json()
+}
+
+export const deleteMessages = async (messageIds) => {
+    if (MOCK_BACKEND) {
+        console.log('Deleting messages:', messageIds)
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                deletedMessages = [...deletedMessages, ...messageIds]
+                resolve()
+            }, MOCK_DELAY)
+        })
+    }
+    await fetch(`${BASE_URL}/messages/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageIds })
+    })
 }

@@ -134,6 +134,11 @@
 .message-actions .card-footer .btn:last-child {
   border-bottom-right-radius: 12px;
 }
+.no-messages {
+  color: #666;
+  text-align: center;
+  margin-top: 100px;
+}
 .folder-list a {
   display: block;
   z-index: 50000;
@@ -264,4 +269,37 @@ cursor: pointer;
   100% {
     transform: rotate(360deg);
   }
+}
+/*.confirm-modal {
+  max-width: 450px;
+  margin-top: 40px;
+}*/
+.confirm-modal .modal-content {
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+.confirm-modal .modal-header {
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+}
+.confirm-modal.d-none {
+  display: block;
+  /* Get it out of the way */
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+}
+.modal.fade:not(.show) {
+  pointer-events: none !important;
+}
+.modal-content {
+  pointer-events: none !important;
+}
+.show .modal-content {
+  pointer-events: auto !important;
+}
+.modal-backdrop:not(.show) {
+  pointer-events: none !important;
 }

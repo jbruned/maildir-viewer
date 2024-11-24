@@ -3,6 +3,7 @@ import { formatDate, isToday } from '../common/utils'
 
 export function MessageList({ messages, selectedMessages, onSelectMessage, onOpenMessage }) {
     return <div id="message-list" className="message-list">
+        {messages.length === 0 && <p className="no-messages">No messages in this folder</p>}
         {messages.map(message => (
             <div key={message.id} className="message-list-item">
                 <input type="checkbox" className="message-checkbox"
