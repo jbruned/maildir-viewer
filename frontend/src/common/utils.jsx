@@ -18,3 +18,17 @@ export function isToday(isoDate) {
            date.getMonth() === today.getMonth() &&
            date.getFullYear() === today.getFullYear()
 }
+
+export function findKeyRecursive(obj, key) {
+    if (obj[key]) {
+        return obj[key]
+    }
+    for (const k in obj) {
+        if (typeof obj[k] === 'object') {
+            const result = findKeyRecursive(obj[k], key)
+            if (result)
+                return result
+        }
+    }
+    return null
+}

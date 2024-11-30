@@ -11,12 +11,15 @@ function App() {
     const [loggedIn, setLoggedIn] = useState(null)
 
     requestUsername().then(username => {
-        setLoggedIn(username.username)
+        setLoggedIn(username)
+    }).catch(() => {
+        setLoggedIn(false)
     })
 
     return (
         loggedIn === null ? <LoadingScreen /> : (
-            loggedIn ? <MainLayout appTitle={APP_TITLE} username={loggedIn} /> : <Login setLoggedIn={setLoggedIn} />
+            loggedIn ? <MainLayout appTitle={APP_TITLE} username={loggedIn} setUsername={setLoggedIn} />
+                     : <Login appTitle={APP_TITLE} setLoggedIn={setLoggedIn} />
         )
     )
 }

@@ -1,3 +1,6 @@
+/*
+ * Main layout
+ */
 #root {
   display: flex;
   flex-direction: column; /* Stack top bar and main container vertically */
@@ -84,7 +87,7 @@
   overflow-y: auto;
   z-index: 2;
   flex-shrink: 0;
-  transition: /*transform 0.3s ease, */width 0.3s ease, margin-left 0.3s ease;
+  transition: width 0.3s ease, margin-left 0.3s ease;
 }
 .message-actions {
   opacity: 0;
@@ -103,7 +106,7 @@
   opacity: 1;
   height: 107px;
 }
-.message-actions .card {
+.message-actions .card, .card.action-buttons {
   padding: 12px;
   margin: 12px;
   margin: 20px;
@@ -114,24 +117,24 @@
   padding: 12px;
   text-align: center;
 }
-.message-actions .card-footer {
+.message-actions .card-footer, .card.action-buttons .card-footer {
   display: flex;
   width: 100%;
   padding: 0;
   background: none;
   border-top: 1px solid #ddd;
 }
-.message-actions .card-footer .btn {
+.message-actions .card-footer .btn, .card.action-buttons .card-footer .btn {
   flex: 1;
   border: none;
   height: 100%;
   border-radius: 0;
 }
-.message-actions .card-footer .btn:first-child {
+.message-actions .card-footer .btn:first-child, .card.action-buttons .card-footer .btn:first-child {
   background-color: #343a40;
   border-bottom-left-radius: 12px;
 }
-.message-actions .card-footer .btn:last-child {
+.message-actions .card-footer .btn:last-child, .card.action-buttons .card-footer .btn:last-child {
   border-bottom-right-radius: 12px;
 }
 .no-messages {
@@ -168,13 +171,13 @@
   transition: margin-left 0.3s;
 }
 .message-list-item {
-display: flex;
-align-items: center;
-padding: 12px 20px;
-gap: 12px;
-border-bottom: 1px solid #ddd;
-transition: background-color 0.2s;
-cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  gap: 12px;
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.2s;
+  cursor: pointer;
 }
 .message-checkbox {
   width: 30px;
@@ -199,7 +202,10 @@ cursor: pointer;
 .message-list-item:hover {
   background-color: #f8f9fa;
 }
-/* Small Screens: Sidebar becomes full width and collapsible */
+
+/*
+ * Collapsible sidebar in small screens
+ */
 @media (max-width: 767.98px) {
   .folder-list a {
       text-overflow: clip;
@@ -209,22 +215,21 @@ cursor: pointer;
   .sidebar {
       overflow: hidden;
       width: 70%;
-      /* width: 0; */
-      /* transform: translateX(-80%); */
       margin-left: -70%;
       z-index: 2;
   }
   .sidebar.active {
-      /* width: 80%; */
-      /* width: 250px; */
       margin-left: 0;
-      /* transform: translateX(0); */
   }
   .main-content {
-    width: 100%; /* Take full available width */
+    width: 100%;
     flex-shrink: 0;  
   }
 }
+
+/*
+ * Single message view page
+ */
 .message-view {
   padding: 30px 40px;
 }
@@ -239,7 +244,6 @@ cursor: pointer;
 .message-view .message-title {
   display: inline-block;
 }
-/* Make the spinner container take the full available width and height */
 .spinner-container {
   display: flex;
   justify-content: center;
@@ -270,10 +274,6 @@ cursor: pointer;
     transform: rotate(360deg);
   }
 }
-/*.confirm-modal {
-  max-width: 450px;
-  margin-top: 40px;
-}*/
 .confirm-modal .modal-content {
   border-top-left-radius: 28px;
   border-top-right-radius: 28px;
@@ -286,7 +286,6 @@ cursor: pointer;
 }
 .confirm-modal.d-none {
   display: block;
-  /* Get it out of the way */
   position: absolute;
   top: -1000px;
   left: -1000px;
@@ -302,4 +301,89 @@ cursor: pointer;
 }
 .modal-backdrop:not(.show) {
   pointer-events: none !important;
+}
+
+/*
+ * Login Page
+ */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8f9fa;
+}
+.login-container h2 {
+  margin-bottom: 12px;
+}
+.login-widget {
+  max-width: 300px;
+  flex-grow: 1;
+}
+.login-form {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  border: none !important;
+}
+.login-form .card-body {
+  padding: 0px;
+}
+.login-form input {
+  border-radius: 0px;
+  height: 50px;
+}
+.login-form input:first-child {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+.login-form input:not(:last-child) {
+  margin-bottom: -1px;
+}
+.login-form input:last-child {
+  margin-bottom: 0;
+}
+.login-form .bg-danger {
+  text-align: center;
+  height: 0px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0;
+  gap: 6px;
+  transition: height 0.3s;
+}
+.login-form .bg-danger.active {
+  height: 50px;
+}
+.login-form .bg-danger i {
+  font-size: 1.2em;
+  margin: 0;
+}
+.login-form .bg-danger p {
+  margin: 0;
+}
+.login-form label {
+  margin-bottom: 0px;
+  color: #333;
+}
+.login-form .card-footer {
+  border: none !important;
+}
+.login-form button {
+  width: 80%;
+  padding: 8px;
+  border-radius: 4px;
+  height: 50px !important;
+  border: none;
+  background-color: #343a40;
+  color: white;
+  cursor: pointer;
+}
+.login-form input:focus, .login-form button:focus, .login-form button:active {
+  box-shadow: 0 0 0 0.2rem rgba(52, 58, 64, 0.25) !important;
+  border-color: #343a40;
+  position: relative;
+  z-index: 5;
 }

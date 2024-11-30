@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { MessageList } from './MessageList.jsx'
 import { MessageView } from './MessageView.jsx'
 import { FolderList } from './FolderList.jsx'
-import { deleteMessages, requestFolders, requestMessages } from '../common/requests.jsx'
+import { deleteMessages, logout, requestFolders, requestMessages } from '../common/requests.jsx'
 import LoadingScreen from './LoadingScreen.jsx'
 
 function isMessage(data) {
     return data && !Array.isArray(data)
 }
 
-function MainLayout({ appTitle, username }) {
+function MainLayout({ appTitle, username, setUsername }) {
     const [data, setData] = useState(null)
     const [selectedMessages, setSelectedMessages] = useState([])
     const [folders, setFolders] = useState(null)
@@ -18,14 +18,14 @@ function MainLayout({ appTitle, username }) {
     const [deleting, setDeleting] = useState(false)
     const DEFAULT_FOLDER = 'Inbox'
 
-    requestFolders().then(folders => {
-        setFolders(folders)
-    })
-
-    var lastPromise = null
-
     // Every time the URL changes, reload the messages
+    const lastRequestId = useRef(0);
     useEffect(() => {
+        if (folders === null) {
+            requestFolders().then(folders => {
+                setFolders(folders)
+            })
+        }
         if (currPath === null) {
             const path = window.location.pathname
             if (path === '/') {
@@ -35,20 +35,18 @@ function MainLayout({ appTitle, username }) {
             }
             return
         }
-        if (deleting) {
+        if (deleting)
             return
-        }
         setData(null)
-        lastPromise = requestMessages(currPath)
-        const currentPromise = lastPromise
-        lastPromise.then(messages => {
-            if (currentPromise !== lastPromise) {
+        const requestId = ++lastRequestId.current;
+        requestMessages(currPath).then(messages => {
+            if (lastRequestId.current !== requestId)
                 return
-            }
             setData(messages)
         })
     }, [currPath, deleting])
 
+    // Handle navigation
     function navigateTo(path) {
         window.history.pushState({}, '', path)
         setData(null)
@@ -59,6 +57,12 @@ function MainLayout({ appTitle, username }) {
         navigateTo(`/${message.path}/${message.id}`)
     }
 
+    function handleSelectFolder(folder) {
+        setSelectedMessages([])
+        navigateTo(`/${folder}`)
+    }
+
+    // Handle message operations
     function handleSelectMessage(message, checked) {
         setSelectedMessages((selectedMessages) => {
             if (checked) {
@@ -66,11 +70,6 @@ function MainLayout({ appTitle, username }) {
             }
             return selectedMessages.filter(id => id !== message.id)
         })
-    }
-
-    function handleSelectFolder(folder) {
-        setSelectedMessages([])
-        navigateTo(`/${folder}`)
     }
 
     function handleDelete(confirmed) {
@@ -93,6 +92,15 @@ function MainLayout({ appTitle, username }) {
         setConfirmDelete(false)
     }
 
+    // Handle logout
+    function handleLogout() {
+        logout().then(() => {
+            setUsername(null)
+        }).catch(() => {
+            setUsername('Error logging out')
+        })
+    }
+
     return (
         <>
             <div className="top-bar">
@@ -113,7 +121,7 @@ function MainLayout({ appTitle, username }) {
                 </div>
                 <div className="logout-icon-container">
                     <span id="username-display" className="mr-2">{username}</span>
-                    <i className="fas fa-sign-out-alt logout-icon"></i>
+                    <i className="fas fa-sign-out-alt logout-icon" onClick={handleLogout}></i>
                 </div>
             </div>
 

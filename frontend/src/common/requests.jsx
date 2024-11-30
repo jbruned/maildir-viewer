@@ -1,3 +1,5 @@
+import { findKeyRecursive } from "./utils"
+
 const BASE_URL = 'http://localhost:8080/api'
 const MOCK_BACKEND = true
 const MOCK_DELAY = 1000 // ms
@@ -31,22 +33,33 @@ const FAKE_FOLDERS = {
         'Project Beta': {}
     }
 }
-var deletedMessages = []
+const FAKE_ADDRESS = 'user@domain.com'
+var loggedIn = false
 
 export const requestMessages = async (path) => {
     if (MOCK_BACKEND) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             setTimeout(() => {
-                const messageId = path.match(/\d+$/)
+                const messageId = path.match(/\d+$/),
+                      strippedPath = path.replace(/\/$/, '').replace(/^\//, '')
                 if (messageId) {
-                    resolve(FAKE_MESSAGES.find(message => message.id === parseInt(messageId[0])))
+                    const message = FAKE_MESSAGES.find(message => message.id === parseInt(messageId[0]))
+                    if (message) {
+                        resolve(message)
+                    } else {
+                        reject('Message not found')
+                    }
                 } else {
-                    resolve(FAKE_MESSAGES.filter(message => path === `/${message.path}` && !deletedMessages.includes(message.id)))
+                    if (findKeyRecursive(FAKE_FOLDERS, strippedPath)) {
+                        resolve(FAKE_MESSAGES.filter(message => message.path === strippedPath))
+                    } else {
+                        reject('Folder not found')
+                    }
                 }
             }, MOCK_DELAY)
         })
     }
-    const response = await fetch(`${BASE_URL}/${path}`)
+    const response = await fetch(`${BASE_URL}/${strippedPath}`)
     return await response.json()
 }
 
@@ -64,9 +77,13 @@ export const requestFolders = async () => {
 
 export const requestUsername = async () => {
     if (MOCK_BACKEND) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             setTimeout(() => {
-                resolve({ username: 'test3@domain.com' })
+                if (loggedIn) {
+                    resolve(FAKE_ADDRESS)
+                } else {
+                    reject('Not logged in')
+                }
             }, MOCK_DELAY)
         })
     }
@@ -76,10 +93,9 @@ export const requestUsername = async () => {
 
 export const deleteMessages = async (messageIds) => {
     if (MOCK_BACKEND) {
-        console.log('Deleting messages:', messageIds)
         return new Promise((resolve) => {
             setTimeout(() => {
-                deletedMessages = [...deletedMessages, ...messageIds]
+                FAKE_MESSAGES.splice(FAKE_MESSAGES.findIndex(message => messageIds.includes(message.id)), messageIds.length)
                 resolve()
             }, MOCK_DELAY)
         })
@@ -89,4 +105,37 @@ export const deleteMessages = async (messageIds) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messageIds })
     })
+}
+
+export const login = async (username, password) => {
+    if (MOCK_BACKEND) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                if (username === '1234' && password === '1234') {
+                    loggedIn = true
+                    resolve(FAKE_ADDRESS)
+                } else {
+                    reject('Invalid credentials')
+                }
+            }, MOCK_DELAY)
+        })
+    }
+    const response = await fetch(`${BASE_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    })
+    return await response.json()
+}
+
+export const logout = async () => {
+    if (MOCK_BACKEND) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                loggedIn = false
+                resolve()
+            }, MOCK_DELAY)
+        })
+    }
+    await fetch(`${BASE_URL}/logout`)
 }
